@@ -1,7 +1,8 @@
 <h1 align="center">Haskell Book Solutions</h1>
 
-https://haskellbook.com/
+[Haskell Book](<Homepage url> "https://haskellbook.com/")
 
-An amazing book for learning Haskell for experienced and entry level developers alike.
+My solutions to the Haskell Book by Christopher Allen and
+Julie Moronuki. An amazing book for learning Haskell for experienced and entry level developers alike written by .
 
-The book that really made things 'click' for me  
+_The book that really made things 'click' for me_  

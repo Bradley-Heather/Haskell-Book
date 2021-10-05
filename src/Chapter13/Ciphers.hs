@@ -55,7 +55,14 @@ vDecrypt [] _  = []
 vDecrypt xs [] = xs
 vDecrypt xs ks = rotate xs (concat (repeat (map negate (rotation ks))))
 
-
+-- main :: Int  -> String -> IO ()
+main = do 
+  putStr "Please choose your cipher: "
+  cipher <- getLine 
+  putStrLn "What would you like to Cipher: "
+  phrase <- getLine 
+  return (vCipher phrase cipher)
+  putStr "Would you like to see the original message? Y/N "
 
 
 

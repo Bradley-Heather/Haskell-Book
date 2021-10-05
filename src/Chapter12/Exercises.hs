@@ -1,5 +1,4 @@
 import Data.List
-import Distribution.SPDX (LicenseId(XSkat))
 
 -- String Processing
 
@@ -97,7 +96,7 @@ fromMaybe _ (Just a) = a
 
 listToMaybe :: [a] -> Maybe a
 listToMaybe []     = Nothing
-listToMaybe (x:xs) = Just x  
+listToMaybe (x:xs) = Just x 
 
 maybeToList :: Maybe a -> [a]
 maybeToList Nothing  = []
@@ -139,4 +138,4 @@ either' f1 _ (Left a) = f1 a
 either' _ f2 (Right a) = f2 a 
 
 eitherMaybe'' :: (b -> c) -> Either a b -> Maybe c
-eitherMaybe'' f = undefined
+eitherMaybe'' f = either (const Nothing) (Just . f) 

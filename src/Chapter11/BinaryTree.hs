@@ -1,6 +1,5 @@
-module BTree where
+module BinaryTree where
 
-import Distribution.Compat.Binary (Binary, bitReverse16)
 data BinaryTree a = Leaf | Node (BinaryTree a) a (BinaryTree a) 
             deriving (Eq, Ord, Show)
 
@@ -71,4 +70,14 @@ main = do
     testInorder
 
 unfold :: (a -> Maybe (a,b,a)) -> a -> BinaryTree b
-unfold = undefined
+unfold f x = 
+      case f x of 
+            Just (left, a, right) -> Node (unfold f left) a (unfold f right) 
+            Nothing               -> Leaf
+
+treeBuild :: Integer -> BinaryTree Integer 
+treeBuild n = unfold tree 0 
+     where 
+           tree a
+              | a < n     = Just (a + 1, a, a + 1)
+              | otherwise = Nothing

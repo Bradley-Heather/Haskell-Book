@@ -3,9 +3,9 @@ module Applicative where
 import Control.Applicative
 import Data.List (elemIndex)
 import Data.Monoid 
--- import Test.QuickCheck 
--- import Test.QuickCheck.Checkers
--- import Test.QuickCheck.Classes
+import Test.QuickCheck 
+import Test.QuickCheck.Checkers
+import Test.QuickCheck.Classes
 
 f x = 
     lookup x [ (3, "hello")

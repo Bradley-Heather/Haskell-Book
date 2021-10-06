@@ -72,6 +72,52 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (Two a b) where
 
 type TwoAssoc = Two String String -> Two String String -> Two String String -> Bool 
 
+-----------------------------------
+-- 4. 
+
+data Three a b c = Three a b c 
+   deriving (Eq, Show)
+
+instance (Semigroup a, Semigroup b, Semigroup c) => Semigroup (Three a b c) where 
+    (<>) (Three a b c) (Three a' b' c') = Three (a <> a') (b <> b') (c <> c')
+
+instance (Arbitrary a, Arbitrary b, Arbitrary c) => Arbitrary (Three a b c) where 
+    arbitrary = do 
+        a <- arbitrary
+        b <- arbitrary
+        c <- arbitrary
+        return (Three a b c)
+
+type S = String
+
+type ThreeAssoc = Three S S S -> Three S S S -> Three S S S -> Bool
+
+------------------------------------
+-- 5. 
+
+newtype BoolConj = BoolConj Bool 
+   deriving (Eq, Show)
+
+
+-------------------------------------
+-- 6. 
+
+newtype BoolDisj = BoolDisj Bool 
+   deriving (Eq, Show)
+
+-------------------------------------
+-- 7. 
+
+data Or a b = Fst a | Snd b 
+   deriving (Eq, Show)
+
+-------------------------------------
+-- 8. 
+
+newtype Combine a b = Combine { unCombine :: a -> b }
+   deriving (Eq, Show)
+
+
 main :: IO ()
 main = do
     putStrLn "Trivial"
@@ -86,4 +132,6 @@ main = do
     quickCheck (semigroupAssoc :: TwoAssoc)
     quickCheck (monoidLeftIdentity :: Two String String -> Bool)
     quickCheck (monoidRightIdentity :: Two String String -> Bool)
+    putStrLn "Three"
+    quickCheck (semigroupAssoc :: ThreeAssoc)
 

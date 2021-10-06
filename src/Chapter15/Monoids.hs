@@ -33,29 +33,28 @@ newtype First' a = First' { getFirst' :: Optional a}
     deriving (Eq, Show) 
 
 instance Semigroup (First' a) where 
-    (<>) (First' { getFirst' = Nada }) (First' { getFirst' = Nada })     = First' { getFirst' = Nada }
-    (<>) (First' { getFirst' = Nada }) (First' { getFirst' = Only a })   = First' { getFirst' = Only a } 
-    (<>) (First' { getFirst' = Only a }) (First' { getFirst' = Nada })   = First' { getFirst' = Only a } 
-    (<>) (First' { getFirst' = Only a }) (First' { getFirst' = Only _ }) = First' { getFirst' = Only a } 
+    (<>) (First' Nada) (First' Nada )        = First' Nada 
+    (<>) (First' Nada) (First' (Only a))     = First' (Only a)  
+    (<>) (First' (Only a)) (First' Nada)     = First' (Only a) 
+    (<>) (First' (Only a)) (First' (Only _)) = First' (Only a)
 
 instance Monoid (First' a) where 
-     mempty  = First' { getFirst' = Nada }
+     mempty  = First' Nada
      mappend = (<>) 
 
 firstMappend :: First' a -> First' a -> First' a
 firstMappend = mappend 
 
-first'Gen :: Arbitrary a => Gen (First' { getFirst' :: Optional a}) 
-first'Gen = do 
-  a <- arbitrary 
-  frequency [ (1, return First' { getFirst' = Nada }), (3, First' { getFirst' = Only a }) ] 
-
 instance Arbitrary a => Arbitrary (First' a) where 
-  arbitrary = first'Gen
+  arbitrary = do 
+  a <- arbitrary 
+  frequency [ (1, return $ First' Nada)
+            , (3, return $ First' $ Only a) 
+            ] 
 
 type FirstMappend = First' String -> First' String -> First' String -> Bool 
 
-type FstId = First' String -> Bool 
+type FstId        = First' String -> Bool 
 
 monoidAssoc :: (Eq m, Monoid m) => m -> m -> m -> Bool
 monoidAssoc a b c = a <> (b <> c) == (a <> b) <> c  

@@ -81,3 +81,22 @@ sumGenFirstPls = do
 
 sumGenCharIntFirst :: Gen (Sum Char Int)
 sumGenCharIntFirst = sumGenFirstPls
+
+---------------------------------
+-- 1. 
+
+data Fool = Fulse | Frue 
+    deriving (Eq, Show)
+
+foolGen :: Gen Fool 
+foolGen = do 
+    oneof [ return Fulse
+          , return Frue ]
+
+----------------------------------
+-- 2. 
+
+foolGen' :: Gen Fool 
+foolGen' = do 
+    frequency [ (2, return Fulse)
+              , (1, return Frue)]

@@ -21,7 +21,7 @@ instance Monoid a => Monoid (Optional a) where
 genOnly :: Arbitrary a => Gen (Optional a)
 genOnly = Only <$> arbitrary
 
-genOptional :: (Arbitrary a) => Gen (Optional a)
+genOptional :: Arbitrary a => Gen (Optional a)
 genOptional =
   frequency [ (1, return Nada)
             , (10, genOnly)

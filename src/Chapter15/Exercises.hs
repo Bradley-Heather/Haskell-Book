@@ -163,7 +163,30 @@ type OrAssoc = Or S S -> Or S S -> Or S S -> Bool
 
 newtype Combine a b = Combine { unCombine :: a -> b }
 
+------------------------------------
+-- 9. 
 
+newtype Comp a = Comp { uncomp :: a -> a }
+
+------------------------------------
+-- 10. Just Semigroup
+
+data Validation a b = Failure a | Success b 
+   deriving (Eq, Show)
+
+instance Semigroup a => Semigroup (Validation a b) where 
+    (<>) = undefined 
+
+-------------------------------------
+-- 11. 
+
+newtype Mem s a = Mem { sunMem :: s -> (a,s) }
+
+instance Semigroup a => Semigroup (Mem s a) where 
+    (<>) = undefined
+
+instance Monoid a => Monoid (Mem s a) where 
+    mempty = undefined
 
 
 main :: IO ()

@@ -98,6 +98,21 @@ type ThreeAssoc = Three S S S -> Three S S S -> Three S S S -> Bool
 newtype BoolConj = BoolConj Bool 
    deriving (Eq, Show)
 
+instance Semigroup BoolConj where 
+    BoolConj True  <> BoolConj True  = BoolConj True 
+    BoolConj _     <> BoolConj False = BoolConj False
+    BoolConj False <> BoolConj _     = BoolConj False
+
+instance Monoid BoolConj where 
+    mempty  = BoolConj True 
+    mappend = (<>)  
+
+instance Arbitrary BoolConj where 
+    arbitrary = do 
+        frequency [ (1, return $ BoolConj True)
+                  , (2, return $ BoolConj False)]
+
+type BoolConjAssoc = BoolConj -> BoolConj -> BoolConj -> Bool
 
 -------------------------------------
 -- 6. 
@@ -105,17 +120,50 @@ newtype BoolConj = BoolConj Bool
 newtype BoolDisj = BoolDisj Bool 
    deriving (Eq, Show)
 
+instance Semigroup BoolDisj where 
+    BoolDisj True  <> _              = BoolDisj True 
+    BoolDisj False <> BoolDisj True  = BoolDisj True 
+    BoolDisj False <> BoolDisj False = BoolDisj False 
+
+instance Monoid BoolDisj where 
+    mempty  = BoolDisj False
+    mappend = (<>)  
+
+instance Arbitrary BoolDisj where 
+    arbitrary = do 
+       frequency [ (1, return $ BoolDisj True)
+                 , (3, return $ BoolDisj False)
+                 ]
+
+type BoolDisjAssoc = BoolDisj -> BoolDisj -> BoolDisj -> Bool
+
 -------------------------------------
 -- 7. 
 
 data Or a b = Fst a | Snd b 
    deriving (Eq, Show)
 
+instance Semigroup (Or a b) where 
+    Fst a <> Fst a' = Fst a' 
+    Fst a <> Snd b  = Snd b  
+    Snd b <> _      = Snd b 
+
+instance (Arbitrary a, Arbitrary b) => Arbitrary (Or a b) where 
+     arbitrary = do 
+         a <- arbitrary
+         b <- arbitrary 
+         frequency [ (2, return $ Fst a)
+                   , (3, return $ Snd b)
+                   ]
+
+type OrAssoc = Or S S -> Or S S -> Or S S -> Bool 
+
 -------------------------------------
 -- 8. 
 
 newtype Combine a b = Combine { unCombine :: a -> b }
-   deriving (Eq, Show)
+
+
 
 
 main :: IO ()
@@ -134,4 +182,14 @@ main = do
     quickCheck (monoidRightIdentity :: Two String String -> Bool)
     putStrLn "Three"
     quickCheck (semigroupAssoc :: ThreeAssoc)
+    putStrLn "BoolConj"
+    quickCheck (semigroupAssoc :: BoolConjAssoc)
+    quickCheck (monoidLeftIdentity :: BoolConj -> Bool)
+    quickCheck (monoidRightIdentity :: BoolConj -> Bool)
+    putStrLn "BoolDisj"
+    quickCheck (semigroupAssoc :: BoolDisjAssoc)
+    quickCheck (monoidLeftIdentity :: BoolDisj -> Bool)
+    quickCheck (monoidRightIdentity :: BoolDisj -> Bool)
+    putStrLn "Or"
+    quickCheck (semigroupAssoc :: OrAssoc)
 

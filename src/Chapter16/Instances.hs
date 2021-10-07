@@ -5,11 +5,9 @@ import Test.QuickCheck
 functorIdentity :: (Functor f, Eq (f a)) => f a -> Bool
 functorIdentity f = fmap id f == f
 
-functorCompose :: (Functor f, Eq (f c)) => (a -> b) -> (b -> c) -> f a -> Bool
-functorCompose f g x =
+functorCompose :: (Functor f, Eq (f c)) => Fun a b -> Fun b c -> f a -> Bool
+functorCompose (Fun _ f) (Fun _ g) x =
   fmap g (fmap f x) == fmap (g . f) x
-
-type S = String
 
 -----------------------------------
 -- 1.
@@ -26,6 +24,8 @@ instance Arbitrary a => Arbitrary (Identity a) where
       a <- arbitrary
       return (Identity a)
 
+type IDCompose = Fun Int Int -> Fun Int Int -> Identity Int -> Bool
+
 ----------------------------------
 -- 2.
 
@@ -41,6 +41,8 @@ instance Arbitrary a => Arbitrary (Pair a) where
         a <- arbitrary
         return (Pair a a)
 
+type PairCompose = Fun Int Int -> Fun Int Int -> Pair Int -> Bool
+
 ----------------------------------
 -- 3.
 
@@ -50,6 +52,14 @@ data Two a b =
 
 instance Functor (Two a) where
     fmap f (Two a b) = Two a (f b)
+
+instance (Arbitrary a, Arbitrary b) => Arbitrary (Two a b) where 
+    arbitrary = do 
+        a <- arbitrary
+        b <- arbitrary
+        return (Two a b)
+
+type TwoCompose = Fun String Int -> Fun Int Int -> Two Int String -> Bool
 
 ----------------------------------
 -- 4.
@@ -66,7 +76,9 @@ instance  (Arbitrary a, Arbitrary b, Arbitrary c) => Arbitrary (Three a b c) whe
         a <- arbitrary
         b <- arbitrary
         c <- arbitrary
-            return (Three a b c)
+        return (Three a b c)
+
+type ThreeCompose = Fun String Int -> Fun Int Int -> Three Int Int String -> Bool
 
 -----------------------------
 -- 5.
@@ -102,3 +114,18 @@ instance Functor (Four' a) where
 -- 8. 
 
 -- Impossible with Trivial due to Kind
+
+main :: IO ()
+main = do
+    putStrLn "Identity"
+    quickCheck (functorCompose :: IDCompose)
+    quickCheck (functorIdentity :: Identity Int -> Bool) 
+    putStrLn "Pair"
+    quickCheck (functorCompose :: PairCompose)
+    quickCheck (functorIdentity :: Pair Int -> Bool)
+    putStrLn "Two"
+    quickCheck (functorCompose :: TwoCompose)
+    quickCheck (functorIdentity :: Two Int String -> Bool)
+    putStrLn "Three"
+    quickCheck (functorCompose :: ThreeCompose)
+    quickCheck (functorIdentity :: Three Int Int String -> Bool)

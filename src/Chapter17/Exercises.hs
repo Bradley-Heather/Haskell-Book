@@ -1,9 +1,9 @@
-module Applicative where
+module Exercises where
 
 import Control.Applicative
 import Data.List (elemIndex)
 import Data.Monoid 
-import Test.QuickCheck 
+import Test.QuickCheck           
 import Test.QuickCheck.Checkers
 import Test.QuickCheck.Classes
 
@@ -28,11 +28,11 @@ m x =
 -----------------------------------
 -- Type Check Exercise
 
--- 1)
+-- 1.
 added :: Maybe Integer 
 added = (+3) <$> lookup 3 (zip [1,2,3][4,5,6])
 
--- 2) 
+-- 2.
 y :: Maybe Integer 
 y = lookup 3 $ zip [1,2,3][4,5,6]
 
@@ -42,7 +42,7 @@ z = lookup 2 $ zip [1,2,3][4,5,6]
 tupled :: Maybe (Integer, Integer)
 tupled = (,) <$> y <*> z
 
--- 3)
+-- 3.
 x :: Maybe Int 
 x = elemIndex 3 [1,2,3,4,5]
 
@@ -55,7 +55,7 @@ max' = max
 maxed :: Maybe Int 
 maxed = max' <$> x <*> n
 
--- 4)
+-- 4.
 as = [1,2,3]
 bs = [4,5,6]
 
@@ -98,60 +98,6 @@ fixer = const <$> Just "Hello" <*> Just "World"
 
 fixer2 = (,,,) <$> Just 90 <*> Just 10 <*> Just "Tierness" <*> Just [1, 2, 3]
 
-------------------------------------------------------
-
-data List a = Nil | Cons a (List a) 
-   deriving (Eq, Show)
-
-append :: List a -> List a -> List a 
-append Nil ys = ys 
-append (Cons x xs) ys = Cons x $ append xs ys 
-
-fold :: (a -> b -> b) -> b -> List a -> b 
-fold _ b Nil = b 
-fold f b (Cons h t) = f h (fold f b t)
-
-concat' :: List (List a) -> List a 
-concat' = fold append Nil 
-
-flatMap :: (a -> List b) -> List a -> List b
-flatMap f as = undefined
-
-instance Functor List where 
-    fmap _ Nil      = Nil 
-    fmap f (Cons a rest) = Cons (f a) (fmap f rest) 
-
-instance Applicative List where 
-    pure x               = Cons x Nil  
-    (<*>) _ Nil          = Nil
-    (<*>) Nil _          = Nil
-    (<*>) (Cons a as) xs = undefined
-
---------------------------------------------
-
-newtype ZipList' a = ZipList' [a]
-   deriving (Eq, Show)
-
-instance Functor ZipList' where 
-    fmap f (ZipList' xs) = ZipList' $ fmap f xs 
-
-instance Applicative ZipList'  where 
-    pure x = ZipList' [x] 
-    (<*>) = undefined 
-
--------------------------------------------
-
-data Validation e a = Failure e | Success a 
-   deriving (Eq, Show)
-
-instance Functor (Validation e) where 
-    fmap _ (Failure e) = Failure e
-    fmap f (Success a) = Success (f a)
-
-instance Monoid e => Applicative (Validation e) where
-    pure  = undefined 
-    (<*>) = undefined   
-
 -------------------------------------------
 -- Maybe 
 
@@ -191,6 +137,7 @@ mkPerson' n a = liftA2 Person (mkName n) (mkAddress a)
 
 ------------------------------------------
 -- Instances
+-- 1. 
 
 data Pair a = Pair a a deriving (Show, Eq)
 
@@ -201,7 +148,21 @@ instance Applicative Pair where
     pure a = Pair a a  
     Pair a b <*> Pair c d = Pair (a c) (b d)
 
+instance Arbitrary a => Arbitrary (Pair a) where 
+    arbitrary = do 
+        a <- arbitrary
+        return (Pair a a)
+
+instance Eq a => EqProp (Pair a) where 
+    (=-=) = eq
+
+triggerPair = undefined :: Pair (Int, String, Int)
+
+runQc :: IO ()
+runQc =  quickBatch $ applicative triggerPair
+
 ------------------------------------------
+-- 2.
 
 data Two a b = Two a b 
    deriving (Eq, Show)
@@ -214,6 +175,31 @@ instance Monoid a => Applicative (Two a) where
     Two a b <*> Two a' b' = Two (a <> a') (b b')     
 
 ------------------------------------------
+-- 3.
+
+data Three a b c = Three a b c 
+   deriving (Eq, Show)
+
+instance Functor (Three a b) where 
+    fmap f (Three a b c) = Three a b (f c)
+
+instance (Monoid a, Monoid b) => Applicative (Three a b) where 
+    pure = Three mempty mempty 
+    Three a b c <*> Three a' b' c' = Three (a <> a') (b <> b') (c c')
+
+------------------------------------------
+-- 4. 
+
+data Three' a b = Three' a b b 
+   deriving (Eq, Show)
+
+instance Functor (Three' a) where 
+    fmap f (Three' a b b') = Three' a (f b) (f b')
+
+instance Monoid a => Applicative (Three' a) where 
+    pure b = Three' mempty b b
+    Three' a b c <*> Three' a' b' c' = Three' (a <> a') (b b') (c c')
+
 -- combinations
 
 stops :: String 

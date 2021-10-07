@@ -27,6 +27,7 @@ instance Foldable Optional where
     foldMap f (Yep x) = f x 
 
 --------------------
+-- 1.
 
 data Constant a b = Constant b 
    deriving (Show, Eq)
@@ -35,6 +36,7 @@ instance Foldable (Constant a) where
     foldMap f (Constant b) = f b
 
 --------------------
+-- 2.
 
 data Two a b = Two a b
    deriving (Show, Eq)
@@ -43,6 +45,7 @@ instance Foldable (Two a) where
     foldMap f (Two a b) = f b 
 
 ---------------------
+-- 3.
 
 data Three a b c = Three a b c 
    deriving (Show, Eq)
@@ -51,6 +54,7 @@ instance Foldable (Three a b) where
     foldMap f (Three a b c) = f c
 
 ---------------------
+-- 4.
 
 data Three' a b = Three' a b b
    deriving (Show, Eq)
@@ -58,8 +62,8 @@ data Three' a b = Three' a b b
 instance Foldable (Three' a) where 
     foldMap f (Three' a b c) = f b <> f c 
 
-
 ---------------------- 
+-- 5.
 
 data Four a b = Four a b b b
    deriving (Show, Eq)
@@ -70,4 +74,4 @@ instance Foldable (Four a) where
 ------------------------
 
 filterF :: (Applicative f, Foldable t, Monoid (f a)) => (a -> Bool) -> t a -> f a 
-filterF = undefined 
+filterF f = foldMap (\x -> if f x then pure x else mempty)

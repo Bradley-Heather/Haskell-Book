@@ -2,6 +2,9 @@ module Monad where
 
 import Control.Monad (join, liftM2)
 import Control.Applicative 
+import Test.QuickCheck           
+import Test.QuickCheck.Checkers
+import Test.QuickCheck.Classes
 
 bind :: Monad m => (a -> m b) -> m a -> m b 
 bind a as = join (a <$> as)
@@ -84,9 +87,10 @@ instance Applicative (Sum a) where
 instance Monad (Sum a) where 
     return = Second 
     Second a >>= b = b a
-    First  a >>= b = First a 
+    First  a >>= _ = First a 
 
 --------------------------------------------------
+-- 1.
 
 data Nope a = NopeDotJpeg 
    deriving (Eq, Show)
@@ -102,7 +106,18 @@ instance Monad Nope where
     return = pure 
     NopeDotJpeg >>= _ = NopeDotJpeg
 
+instance Arbitrary (Nope a) where 
+    arbitrary = return NopeDotJpeg
+
+instance EqProp (Nope a) where
+    (=-=) = eq 
+
+type ISI = (Int, String, Int) 
+
+triggerNope = undefined :: Nope ISI
+
 ---------------------------------------------------
+-- 2.
 
 data BahEither b a = PLeft a | PRight b
    deriving (Eq, Show)
@@ -122,7 +137,20 @@ instance Monad (BahEither b) where
     PLeft  a >>= n  = n a 
     PRight b >>= _  = PRight b 
 
+instance (Arbitrary b, Arbitrary a) => Arbitrary (BahEither b a) where 
+    arbitrary = do
+        b <- arbitrary
+        a <- arbitrary
+        frequency [ (1, return $ PLeft a)
+                  , (2, return $ PRight b)]
+
+instance (Eq b, Eq a) => EqProp (BahEither b a) where 
+    (=-=) = eq 
+
+triggerBahEither = undefined :: BahEither String ISI
+
 --------------------------------------------------
+-- 3.
 
 newtype Identity a = Identity a 
    deriving (Eq, Ord, Show)
@@ -138,7 +166,16 @@ instance Monad Identity where
     return           = pure 
     Identity a >>= n = n a 
 
+instance Arbitrary a => Arbitrary (Identity a) where 
+    arbitrary = Identity <$> arbitrary
+
+instance (Eq a) => EqProp (Identity a) where 
+    (=-=) = eq 
+
+triggerID = undefined :: Identity ISI
+
 ---------------------------------------------------
+-- 4.
 
 data List a = Nil | Cons a (List a) 
    deriving (Eq, Show)
@@ -160,9 +197,47 @@ instance Applicative List where
 instance Monad List where
     return           = pure 
     Nil       >>= _  = Nil
-    Cons a as >>= xs = undefined 
+    Cons a xs >>= f  = f a `append` (xs >>= f)
 
+genList :: Arbitrary a => Gen (List a)
+genList = do
+    a <- arbitrary
+    l <- genList 
+    frequency [ (1, return Nil)
+              , (3, return $ Cons a l)] 
+
+instance Arbitrary a => Arbitrary (List a) where 
+    arbitrary = genList 
+
+instance Eq a => EqProp (List a) where
+    (=-=) = eq
+
+triggerList = undefined :: List ISI
 ------------------------------------------------------
+
+runQc :: IO ()
+runQc = do 
+    putStrLn "Nope:"
+    quickBatch $ functor triggerNope
+    quickBatch $ applicative triggerNope
+    quickBatch $ monad triggerNope 
+    putStrLn ""
+    putStrLn "BahEither"
+    quickBatch $ functor triggerBahEither
+    quickBatch $ applicative triggerBahEither
+    quickBatch $ monad triggerBahEither
+    putStrLn ""
+    putStrLn "Identity"
+    quickBatch $ functor triggerID
+    quickBatch $ applicative triggerID
+    quickBatch $ monad triggerID
+    putStrLn ""
+    putStrLn "List"
+    quickBatch $ functor triggerList
+    quickBatch $ applicative triggerList
+    quickBatch $ monad triggerList
+
+-------------------------------------------------------
 
 j :: Monad m => m (m a) -> m a 
 j = join   

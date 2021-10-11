@@ -138,3 +138,8 @@ instance Functor GoatLord where
 -- 11.
 
 data TalkToMe a = Halt | Print String a | Read (String -> a)
+
+instance Functor TalkToMe where 
+    fmap _ Halt        = Halt 
+    fmap f (Print s a) = undefined
+    fmap f (Read sa)   = Read $ \s -> f (sa s)

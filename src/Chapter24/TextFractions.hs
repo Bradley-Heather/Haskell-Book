@@ -24,12 +24,11 @@ parseFraction = do
 type FractionOrDecimal = Either Rational Double
 
 parseNos :: Parser FractionOrDecimal
-parseNos = (Left <$> parseFraction) <|> (Right <$> try double)
+parseNos = (Left <$> try parseFraction) <|> (Right <$> try double)
 
+fracOrDec = "1.0\n2.1\n2/1"
 
-
-
-
+-------------------------------
 
 main :: IO ()
 main = do 
@@ -39,6 +38,10 @@ main = do
     print $ parseFraction' shouldAlsoWork
     print $ parseFraction' alsoBad
     print $ parseFraction' badFraction
+    print $ parseString parseNos mempty shouldWork
+    print $ parseString (some parseNos) mempty fracOrDec
+
+-------------------------------
 
 pInt :: Parser Integer 
 pInt = do 

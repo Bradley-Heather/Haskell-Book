@@ -13,5 +13,10 @@ onlyReportError action = do
         Left e -> print e 
         Right _ -> return ()
 
-testDiv :: Integer -> IO ()
+testDiv :: String -> IO ()
 testDiv d = onlyReportError $ willIFail (read d)
+
+main :: IO () 
+main = do 
+    args <- getArgs 
+    mapM_ testDiv args 

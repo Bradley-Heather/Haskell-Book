@@ -14,7 +14,7 @@ randomException = do
 
 main :: IO ()
 main = forever $ do 
-    let tryS :: IO () -> IO (Either (SomeException) ())
+    let tryS :: IO () -> IO (Either SomeExceptionC ())
         tryS = try 
     _ <- tryS randomException 
     putStrLn "Live to loop another day"

@@ -5,4 +5,5 @@
 My solutions to the Haskell Book by Christopher Allen and
 Julie Moronuki. An amazing book for learning Haskell for experienced and entry level developers alike.
 
-_The book that really made things 'click' for me_  
+
+_The book that really made things 'click'_  

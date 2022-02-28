@@ -61,4 +61,4 @@ instance Functor (Reader r) where
 ------------------------------------
 
 ask :: Reader a a 
-ask = undefined
+ask = Reader id 
